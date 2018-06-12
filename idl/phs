@@ -1,0 +1,18 @@
+[info]
+name = phs
+longname = Pyramidal Horn Schunck
+src = http://www.ipol.im/pub/art/2013/20/phs_3.tar.gz
+
+[input]
+a = image
+b = image
+
+[output]
+out = image
+
+[build]
+make
+cp horn_schunck_pyramidal $BIN/phs
+
+[run]
+phs $a $b $out

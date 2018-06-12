@@ -1,0 +1,17 @@
+[info]
+name = fusion
+longname = Image Fusion
+src = http://www.ipol.im/pub/fusion.zip`
+
+[input]
+ele%d = image
+
+[output]
+out = image
+
+[build]
+make
+cp horn_schunck_pyramidal $BIN/phs
+
+[run]
+phs $ele%d $img2 $out
