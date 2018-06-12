@@ -73,3 +73,15 @@ There are only THREE possible types of objects:
 If you need integer values or booleans, you put them inside floats.  Strings
 are to be avoided unless really necessary (e.g., if your program deals with
 text).
+
+
+DESIDERATA (in python)
+
+import ipol
+import iio
+
+x = iio.read("lena.png")   # x is an array of size 256x256
+y = ipol.lsd(x)            # y is an array of size 351x7
+z = ipol.nlm(x, sigma=3)   # z is like x, but denoised
+f = ipol.phs(x, z)         # f is the horn-schunck flow from x to z
+g = ipol.tvl1(x, z)        # f is the TVL1 flow from x to z
