@@ -1,0 +1,458 @@
+\documentclass[t]{beamer}
+\usepackage[utf8]{inputenc}  % to be able to type unicode text directly
+%\usepackage[french]{babel}   % french typographical conventions
+\usepackage{inconsolata}     % for a nicer (e.g. non-courier) tt family font
+\usepackage{amsthm,amsmath}  % fancier mathematics
+\usepackage{mathabx}         % even fancier mathematics
+\usepackage{array}           % to fine-tune tabular spacing
+\usepackage{bbm}             % for blackboard 1
+\usepackage{textpos}         % absolute positioning
+\usepackage{hyperref,url}    % links and urls
+
+\usepackage{graphicx}        % to include images
+%\usepackage{animate}         % to include animated images
+%\usepackage{bbding}          % for Checkmark and XSolidBrush
+\usepackage[outputdir=PDFLATEXFILTERD]{minted}          % for code insets
+\usepackage{soul}            % for colored strikethrough
+
+\colorlet{darkgreen}{black!50!green}  % used for page numbers
+\definecolor{term}{rgb}{.9,.9,.9}     % used for code insets
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
+
+% coco's macros
+\newcommand{\1}{\textbf{1}}
+\def\R{\textbf{R}}
+\def\C{\textbf{C}}
+\def\N{\textbf{N}}
+\def\T{\textbf{T}}
+\def\F{\mathcal{F}}
+\def\x{\textbf{x}}
+\def\y{\textbf{y}}
+\def\b{\textbf{b}}
+\def\u{\mathbf{u}}
+\def\Z{\textbf{Z}}
+\def\d{\mathrm{d}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\reference}[1] {{\scriptsize \color{gray}  #1 }}
+\newcommand{\referencep}[1] {{\tiny \color{gray}  #1 }}
+\newcommand{\unit}[1] {{\tiny \color{gray}  #1 }}
+
+% \parens{x}      ->  (x)
+% \pairing{x}{y}  ->  <x,y>
+\newcommand{\parens}[1]{\left(#1\right)} % (x)
+\newcommand{\pairing}[2]{\left\langle #1,\,#2\right\rangle} % <x,y>
+
+% \abs{x}         ->    |x|
+% \Abs{x}         ->   ||x||
+% \ABS{x}         ->  |||x|||
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\Abs}[1]{\left\|#1\right\|}
+\newcommand{\ABS}[1]{{\left\vert\kern-0.25ex\left\vert\kern-0.25ex\left\vert #1 \right\vert\kern-0.25ex\right\vert\kern-0.25ex\right\vert}}
+
+% \Sh -> dirac comb symbol shah
+\DeclareFontFamily{U}{wncy}{}
+\DeclareFontShape{U}{wncy}{m}{n}{<->wncyr10}{}
+\DeclareSymbolFont{mcy}{U}{wncy}{m}{n}
+\DeclareMathSymbol{\Sh}{\mathord}{mcy}{"58}
+
+% really wide hat
+\usepackage{scalerel,stackengine}
+\stackMath
+\newcommand\reallywidehat[1]{%
+\savestack{\tmpbox}{\stretchto{%
+  \scaleto{%
+    \scalerel*[\widthof{\ensuremath{#1}}]{\kern-.6pt\bigwedge\kern-.6pt}%
+    {\rule[-\textheight/2]{1ex}{\textheight}}%WIDTH-LIMITED BIG WEDGE
+  }{\textheight}% 
+}{0.5ex}}%
+\stackon[1pt]{#1}{\tmpbox}%
+}
+
+% disable spacing around verbatim
+\usepackage{etoolbox}
+\makeatletter\preto{\@verbatim}{\topsep=0pt \partopsep=0pt }\makeatother
+
+% disable headings, set slide numbers in green
+\mode<all>\setbeamertemplate{navigation symbols}{}
+\defbeamertemplate*{footline}{pagecount}{\leavevmode\hfill\color{darkgreen}
+   \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}\vskip0pt}
+
+%%% select red color for strikethrough
+\makeatletter
+\newcommand\SoulColor{%
+  \let\set@color\beamerorig@set@color
+  \let\reset@color\beamerorig@reset@color}
+\makeatother
+\newcommand<>{\St}[1]{\only#2{\SoulColor\st{#1}}}
+\setstcolor{red}
+
+% make everything monospace
+\renewcommand*\familydefault{\ttdefault}
+
+\begin{document}
+
+\begin{frame}[plain,fragile]
+\LARGE
+\begin{verbatim}
+
+
+
+
+    ipol.sh  and  ipol.py
+
+
+
+
+
+EML
+GTTI 9--12--2020
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+{\bf What:}\\
+{\color{blue}Natural} shell and python interfaces for many IPOL algorithms.
+
+{\bf How:}\\
+A single file {\color{blue}ipol.py} that can be imported from Python or run
+from the command line.
+
+{\bf Why:}\\
+\pause
+{\St{To troll Miguel.}}$ $
+For various serious reasons.
+
+\vfill
+\pause
+{\bf Status:}\\
+- {\color{blue}github.com/mnhrdt/clipol}\\
+- Works on Linux, BSDs and macOS Catalina, no Windows\\
+- Missing support for octave/torch/tensorflow\\
+- Must add ``all'' IPOL algorithms (only 10 yet)
+\end{frame}
+
+
+% THE WHAT
+\begin{frame}%
+
+\vfill
+\begin{center}
+\Huge
+The \bf What
+\end{center}
+\vfill
+\small
+{$\,$ {\bf Natural interfaces} to IPOL algorithms in shell and Python}
+\end{frame}
+
+% what is a ``natural'' interface for LSD in shell and python
+% (natural frontend)
+\begin{frame}[fragile]
+NATURAL PYTHON AND SHELL INTERFACES FOR LSD\\
+===========================================
+
+\vfill
+{\bf ``Natural''} way to run LSD inside Python:
+\begin{minted}[frame=single]{python}
+import ipol       # the proposed interface to IPOL
+x = ...           # create an image as an ndarray
+y = ipol.lsd(x)   # y is now an array of size Nx7
+\end{minted}
+
+
+\vfill
+{\bf ``Natural''} way to run LSD inside the shell:
+\begin{minted}[frame=single]{bash}
+ipol lsd image.png segments.txt
+\end{minted}
+
+\vfill
+\end{frame}
+
+% ease to concatenate demos: e.g. ponomarenko+denoising
+\begin{frame}[fragile]
+CONCATENATION OF IPOL ALGORITHMS\\
+================================
+
+{\bf Goal:}
+Estimate the noise of an image using Ponomarenko's method, then denoise it
+using BM3D.
+
+\vfill
+In Python:
+\begin{minted}[frame=single]{python}
+import ipol, iio
+x = iio.read("barbara.png")
+s = ipol.ponomarenko(x)
+y = ipol.bm3d(x, s)
+iio.write("barbara_denoised.png")
+\end{minted}
+
+\vfill
+In the shell:
+\begin{minted}[frame=single]{bash}
+S=`ipol ponomarenko barbara.png`
+ipol bm3d --sigma=$S barbara.png barbara_denoised.png
+\end{minted}
+
+\end{frame}
+
+% python help (with completion)
+\begin{frame}
+PYTHON HELP VIA COMPLETION\\
+==========================
+
+\end{frame}
+
+% shell help (with completion)
+\begin{frame}
+SHELL HELP OPTION\\
+=================
+
+\end{frame}
+
+% frontend design criteria
+\begin{frame}
+EXISTING ALGORITHMS\\
+===================
+
+Some IPOL algorithms have already been adapted to this system:
+{\color{blue}
+ldf, tvl1flow, phsflow, roflow, rdpoflow, ace, bm3d, sift, asift,
+goldstein-fattal, canny-devernay, retinex-poisson, nlm, dct-denoise
+}
+
+The adaptation consists in reading and understanding the README file of the
+code, and call it from the command line.  Equivalent to writing the
+{\color{blue} run.sh} file in the demo system.  Estimated time per
+algorithm:~{\bf 15min}.
+\end{frame}
+
+% frontend design criteria
+\begin{frame}
+FRONTEND DESIGN CRITERIA\\
+========================
+
+1. Each algorithm has a
+{\color{blue}unique},
+{\color{blue}meaningful
+%well-chosen
+name}.
+
+2. The interface is as natural as possible, and selects {\color{blue}reasonable
+defaults} for missing parameters.
+
+3. Raw access to the original executable is available via the option
+{\color{blue}--raw}.
+
+4. Transparent conversion to the image format chosen by each program.  The
+default file format is {\color{blue}.npy}.
+\end{frame}
+
+% ``natural'' bakend: idl
+\begin{frame}[fragile]
+BACKEND: IDL FILES (INSPIRED BY DOCKERFILES)\\
+============================================
+
+Complete {\bf IDL} file for LSD:
+
+\begin{minted}[frame=single,fontsize=\small]{docker}
+NAME lsd
+TITLE Line Segment Detector
+SRC http://www.ipol.im/pub/art/2012/gjmr-lsd/lsd_1.6.zip
+
+INPUT in image:pgm
+OUTPUT out text
+
+BUILD make
+BUILD cp lsd $BIN
+
+RUN lsd $in $out
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+BACKEND: IDL FILES (INSPIRED BY DOCKERFILES)\\
+============================================
+
+Complete {\bf IDL} file for LSD:
+
+\begin{minted}[frame=single,fontsize=\small]{docker}
+NAME lsd  # global identifier
+TITLE Line Segment Detector
+SRC http://www.ipol.im/pub/art/2012/gjmr-lsd/lsd_1.6.zip
+
+INPUT image:pgm in  # the input image is converted to pgm
+OUTPUT text out
+
+BUILD make          # shell instructions to build the program
+BUILD cp lsd $BIN   # program files are copied to $BIN
+
+RUN lsd $in $out    # $BIN is in the path, you can run lsd
+\end{minted}
+Comments are allowed!
+\end{frame}
+
+% a more complex idl with per-uname differences
+\begin{frame}[fragile]
+A MORE COMPLEX IDL FILE\\
+=======================
+
+\begin{minted}[frame=single,fontsize=\footnotesize]{docker}
+a
+\end{minted}
+\end{frame}
+
+
+% list of current IDL files
+\begin{frame}
+EXISTING IDL FILES\\
+==================
+
+\end{frame}
+
+
+
+
+% THE HOW
+\begin{frame}%
+
+\vfill
+\begin{center}
+\Huge
+The \bf How
+\end{center}
+\vfill
+\small
+\centering
+{A single file {\bf ipol.py}}
+\end{frame}
+
+
+% how does it work, what does it do internally?
+\begin{frame}
+INNER WORKINGS OF ipol.py\\
+=========================
+
+\end{frame}
+
+% the inner working is an implementation detail
+% comment: enforcing stricter software guidelines would make an easier, more
+% efficient integration trivial
+%\begin{frame}
+%IPOL.PY AND IPOL.SH\\
+%===================
+%
+%\end{frame}
+
+
+% THE WHY
+\begin{frame}%
+
+\vfill
+\begin{center}
+\Huge
+The \bf Why
+\end{center}
+\vfill
+\small
+\centering
+{Various serious reasons}
+\end{frame}
+
+\begin{frame}
+$\!\,${\bf WHY:} SUMMARY OF REASONS\\
+=======================
+
+1. Proof-based reproducibility\\
+(as opposed to trust-based for ipol demos)
+
+2. Personal usage: avoid re-reading the README file every time I want to run an
+ipol code.
+
+3. Personal challenge: write a sane Python program
+
+4. Towards a ``corpus'' of algorithms like in megawave
+
+\end{frame}
+
+% trust-based reproducibility in current ipol demos
+% goal: proof-based reproducibility
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+\end{frame}
+
+
+% in more practical terms: avoid reading the ''README'' for each new ipol code
+% we want to try.  The IDL formalizes (and thus replaces) the README file
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+\end{frame}
+
+
+% personally, a proof of sane python coding style
+% - indentation with tabs
+% - all variables are single letters
+% - no global imports
+% - no bullshit like json, pandas, and the like
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+\end{frame}
+
+
+% build a corpus of algorithm à la megawave that are runnable and comparable
+% together.  Goal: never get to ``de-ipolisize'' a code in the future.
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+\end{frame}
+
+
+% design phylosopy (from more important to less important)
+% 1. Super-simple shell interface
+% 2. Super-simple Python interface
+% 3. Super-simple IDL files (goal: write a new IDL file in less than 15min)
+% 4. Minimum number of Python dependencies
+% 5. Super-simple Python implementation
+% 6. Portability to as many IPOL algorithms as possible
+% 7. Portability to as many systems as possible
+% 8. Efficient runtime
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+\end{frame}
+
+% status and future work
+\begin{frame}
+STATUS AND FUTURE WORK\\
+======================
+
+\end{frame}
+
+% support promise: 1 idl file = 1 pint of beer (of my choice)
+\begin{frame}
+IPOL.PY AND IPOL.SH\\
+===================
+
+\end{frame}
+
+\end{document}
+
+
+% vim:sw=2 ts=2 spell spelllang=fr:

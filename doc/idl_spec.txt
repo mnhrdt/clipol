@@ -1,0 +1,33 @@
+An IDL file is a sequence of lines of text.
+
+Each line is of the form "COMMAND option1 option2 ...".
+
+There are 7 available commands: NAME TITLE SRC INPUT OUTPUT BUILD RUN
+
+NAME: specify a short, unique identifier for the algorithm
+TITLE: (optional?) longer name
+SRC: where to download the archive of the code (may be git, http, etc)
+INPUT: specify an input argument (image, number or string)
+OUTPUT: specify an output argument
+BUILD: shell instructions to build the program
+RUN: shell instructions to run the program
+
+There will never be more than these commands, and the "TITLE" command may be
+removed in the future.  You can add user-readable text by using #-comments
+anywhere.
+
+NAME <id>
+TITLE <unquoted-string-max-68-chars>
+SRC <url>                             # where to get the source code
+BUILD <command-line>                  # build instructions
+INPUT <id> <type>                     # obligatory input argument
+INPUT <id> <type> <default-value>     # optional input argument
+OUTPUT <id> <type>                    # obligatory output argument
+OUTPUT <id> <type> optional           # optional output argument
+RUN <command-line>                    # run instructions
+
+<id> := string without spaces
+<type> := <type-name>
+<type> := <type-name>:<type-modifier>
+<type-name> := {image|number|string}
+<type-modifier> := {pgm|ppm|png|...}
