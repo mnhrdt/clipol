@@ -13,10 +13,15 @@ BUILD_SCRIPT_NAME = "_ipol_build_script.sh"
 CALL_SCRIPT_NAME = "_ipol_call_script.sh"
 
 
+# print to stderr
+def dprint(*args, **kwargs):
+	import sys
+	print(*args, file=sys.stderr, **kwargs)
+
 # print an error message and exit
 def fail(msg):
 	import sys
-	print("ERROR: %s" % msg)
+	dprint("ERROR: %s" % msg)
 	sys.exit(42)
 
 # idl spec:
@@ -120,12 +125,12 @@ def ipol_parse_idl_old(f):
 def ipol_build_interface(p):
 	import shutil
 	import subprocess
-	print("building interface \"%s\"" % p)
+	dprint("building interface \"%s\"" % p)
 	name = p['NAME']
 	srcurl = p['SRC']
-	print("get \"%s\" code from \"%s\"" % (name,srcurl))
+	dprint("get \"%s\" code from \"%s\"" % (name,srcurl))
 	mycache = "%s/%s" % (IPOL_CACHE, name)
-	print("cache = \"%s\"" % mycache)
+	dprint("cache = \"%s\"" % mycache)
 	if os.path.exists(mycache):
 		shutil.rmtree(mycache)
 	os.makedirs(mycache)
@@ -184,7 +189,9 @@ def ipol_partition_args(l):
 	return (equal_nop, equal_yes)
 
 # returns a dictionary of replacements
-def ipol_matchpars(p,pos_args,named_args):
+def ipol_matchpars(p, pos_args, named_args):
+	dprint(f"matchpars pos_args={pos_args}")
+	dprint(f"matchpars named_args={named_args}")
 	args_dict = {}
 	for x in named_args:
 		a,_,b = x.partition("=")
@@ -193,14 +200,15 @@ def ipol_matchpars(p,pos_args,named_args):
 	cx = 0
 	for k,v in p['INPUT'].items():
 		a,b = v
-		if len(b) == 0:
+		dprint(f"k,v,a,b={k},{v},{a},{b}")
+		if len(b) == 0 or a == "image":
 			r[k] = pos_args[cx]
 			cx += 1
 		else:
 			r[k] = args_dict[k] if k in args_dict else b
 	for k,v in p['OUTPUT'].items():
 		a,b = v
-		if len(b) == 0:
+		if len(b) == 0 or a == "image":
 			r[k] = pos_args[cx]
 			cx += 1
 		else:
@@ -223,8 +231,8 @@ def ipol_call_matched(p, m):
 	bindir = "%s/bin" % mycache
 
 	key = get_random_key()
-	print("key = %s" % key)
-	print("m = %s" % m)
+	dprint("key = %s" % key)
+	dprint("m = %s" % m)
 	tmpdir = "%s/tmp/%s" % (mycache, key)
 	os.makedirs(tmpdir)
 
@@ -239,8 +247,8 @@ def ipol_call_matched(p, m):
 			ext = "png" # default file extension
 			if len(b) > 0:
 				ext = b
-			f = f"{tmpdir}/in_{cx}.{ext}"
-			in_pairs.append((m[k], f))
+			f = f"in_{cx}.{ext}"
+			in_pairs.append((m[k], f"{tmpdir}/{f}"))
 			m[k] = f
 			cx = cx + 1
 
@@ -252,16 +260,16 @@ def ipol_call_matched(p, m):
 			ext = "png" # default file extension
 			if len(b) > 0:
 				ext = b
-			f = f"{tmpdir}/out_{cx}.{ext}"
-			out_pairs.append((f, m[k]))
+			f = f"out_{cx}.{ext}"
+			out_pairs.append((f"{tmpdir}/{f}", m[k]))
 			m[k] = f
 			cx = cx + 1
-	print(f"in_pairs={in_pairs}")
-	print(f"out_pairs={out_pairs}")
-	print(f"m={m}")
+	dprint(f"in_pairs={in_pairs}")
+	dprint(f"out_pairs={out_pairs}")
+	dprint(f"m={m}")
 	import iio
 	for i in in_pairs:
-		print(f"iion {i[0]} {i[1]}")
+		dprint(f"iion {i[0]} {i[1]}")
 		x = iio.read(i[0])
 		iio.write(i[1], x)
 
@@ -281,7 +289,7 @@ def ipol_call_matched(p, m):
 
 	# 5. recover the output data
 	for i in out_pairs:
-		print(f"iion {i[0]} {i[1]}")
+		dprint(f"iion {i[0]} {i[1]}")
 		x = iio.read(i[0])
 		iio.write(i[1], x)
 
@@ -292,16 +300,16 @@ def ipol_call_matched(p, m):
 # deferred to the function "ipol_call_matched"
 def main_article(argv):
 	x = argv[0]
-	#print("Article id = %s" % x)
+	dprint("Article id = %s" % x)
 	x_idl = "%s/idl/%s" % (IPOL_CONFIG, x)
 	x_cache = "%s/%s" % (IPOL_CACHE, x)
 	p = ipol_parse_idl(x_idl)
-	#print("Is built = %s" % str(ipol_is_built(p)))
+	dprint("Is built = %s" % str(ipol_is_built(p)))
 	if not ipol_is_built(p):
 		ipol_build_interface(p)
 	# compulsory, positional parameters
-	nb_in, nb_out = ipol_signature(p)
-	#print("signature = %d %d" % (nb_in, nb_out))
+	#nb_in, nb_out = ipol_signature(p)
+	#dprint("signature = %d %d" % (nb_in, nb_out))
 	args_nop,args_yes = ipol_partition_args(argv[1:])
 
 	## TODO: hide these details under the "--raw" option
@@ -310,24 +318,25 @@ def main_article(argv):
 	#	subprocess.run(hypobin, shell=True)
 	#	return 0
 
-	print("args_nop = %s" % args_nop)
-	print("args_yes = %s" % args_yes)
+	dprint(f"p = {p}")
+	dprint("args_nop = %s" % args_nop)
+	dprint("args_yes = %s" % args_yes)
 	mp = ipol_matchpars(p,args_nop,args_yes)
-	#print("matched args:\n%s" % mp)
-	if len(args_nop) == nb_in + nb_out:
-		ipol_call_matched(p, mp)
-	else:
-		fail("signatures mismatch")
+	print("matched args:\n%s" % mp)
+	#if len(args_nop) == nb_in + nb_out:
+	ipol_call_matched(p, mp)
+	#else:
+	#	fail("signatures mismatch")
 	return 0
 
 def main_status():
 	config_dir = IPOL_CONFIG
 	config_idl = "%s/idl" % config_dir
 	idls = os.listdir(config_idl)
-	print('Config dir "%s" /ontains %d programs' % (config_dir, len(idls)))
+	dprint('Config dir "%s" /ontains %d programs' % (config_dir, len(idls)))
 	cache_dir = IPOL_CACHE
 	cacs = os.listdir(cache_dir)
-	print('Cache dir "%s" contains %d programs' % (cache_dir, len(cacs)))
+	dprint('Cache dir "%s" contains %d programs' % (cache_dir, len(cacs)))
 	return 0
 
 def main_list():
@@ -336,7 +345,7 @@ def main_list():
 	idls = os.listdir(config_idl)
 	for x in idls:
 		p = ipol_parse_idl("%s/%s" % (config_idl, x))
-		print("\t%s\t%s" % (p['NAME'], p['LONGNAME']))
+		dprint("\t%s\t%s" % (p['NAME'], p['LONGNAME']))
 	return 0
 
 def main_dump(x):
