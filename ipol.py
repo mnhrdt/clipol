@@ -4,6 +4,7 @@
 import os   # TODO: remove this global import
 
 # global configuration options
+DEBUG_LEVEL = 0
 IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
 #IPOL_CONFIG = "%s/.config/ipol" % os.path.expanduser("~")
 IPOL_CONFIG = "/home/coco/src/clipol"
@@ -15,8 +16,9 @@ CALL_SCRIPT_NAME = "_ipol_call_script.sh"
 
 # print to stderr
 def dprint(*args, **kwargs):
-	import sys
-	print(*args, file=sys.stderr, **kwargs)
+	if DEBUG_LEVEL > 0:
+		import sys
+		print(*args, file=sys.stderr, **kwargs)
 
 # print an error message and exit
 def fail(msg):
@@ -220,7 +222,7 @@ def get_random_key():
 	import uuid
 	return uuid.uuid4().hex.upper()
 
-# perform the actual subprocess call to the IPOL code
+# perform the actual subprocess call to the IPOL code (pure shell)
 def ipol_call_matched(p, m):
 
 	# 1. create a sanitized run environment
@@ -284,7 +286,7 @@ def ipol_call_matched(p, m):
 
 	# 4. run the call script
 	import subprocess
-	subprocess.call("pwd;cat %s" % callscript, shell=True, cwd=tmpdir)
+	#subprocess.call("pwd;cat %s" % callscript, shell=True, cwd=tmpdir)
 	subprocess.call(". %s" % callscript, shell=True, cwd=tmpdir)
 
 	# 5. recover the output data
@@ -329,26 +331,119 @@ def main_article(argv):
 	#	fail("signatures mismatch")
 	return 0
 
+
+
 # this function calls the article "x" with the given arguments
 # it is used from the import-able python interface
 # NOTE: it could be refactored with the function "main_article" above,
 # because most of the logic is the same
-
+#
+# here the (non-optional) outputs are returned as a tuple
 def run_article(x, *args):
 	args, kwargs = (args[0], args[1]) # I don't understand why this works
-	dprint(f"going to run {x}({args}, {kwargs})")
-	#n = len(args)
-	#m = len(kwargs.keys())
-	#dprint(f"n={n}")
-	#dprint(f"m={m}")
+	dprint(f"len(args)={len(args)}")
+	dprint(f"kwargs={kwargs.keys()}")
+	dprint(f"going to run {x}(args, {kwargs})")
 	p = ipol_parse_idl(f"{IPOL_CONFIG}/idl/{x}")
-	return 0
+	if not ipol_is_built(p):
+		ipol_build_interface(p)
+	#args_nop,args_yes = ipol_partition_args(argv[1:])
+	#dprint(f"p = {p}")
+	#dprint("args_nop = %s" % args_nop)
+	#dprint("args_yes = %s" % args_yes)
+	#mp = ipol_matchpars(p,args_nop,args_yes)
+	#print("matched args:\n%s" % mp)
+
+	# 0.1. populate dictionary m with default input parameter values
+	m = {}
+	for k,v in p['INPUT'].items():
+		a,b = v     # (type,type-complement) for example (image,png)
+		if a == "number" or a == "string" and len(b) > 0:
+			m[k] = b
+	dprint(f"default m={m}")
+	# 0.2. add given arguments from kwargs
+	for k,v in kwargs.items():
+		m[k] = v
+	dprint(f"updated m={m}")
+
+
+
+	# 1. create a sanitized run environment
+	name = p['NAME']
+	mycache = "%s/%s" % (IPOL_CACHE, name)
+	bindir = "%s/bin" % mycache
+	key = get_random_key()
+	dprint("key = %s" % key)
+	tmpdir = "%s/tmp/%s" % (mycache, key)
+	os.makedirs(tmpdir)
+
+	# 2. write the input ndarrays into the run environment
+	in_pairs = [] # correspondence between ndarrays(indices) and filenames
+	cx = 0
+	for k,v in p['INPUT'].items():
+		a,b = v     # (type,type-complement) for example (image,png)
+		if a == "image":
+			ext = "png" # default file extension
+			if len(b) > 0:
+				ext = b
+			f = f"in_{cx}.{ext}"
+			in_pairs.append((cx, f"{tmpdir}/{f}"))
+			m[k] = f
+			cx = cx + 1
+	out_pairs = [] # correspondence between cli filenames and assigned names
+	cx = 0
+	for k,v in p['OUTPUT'].items():
+		a,b = v     # (type,type-complement) for example (image,png)
+		if a == "image":
+			ext = "png" # default file extension
+			if len(b) > 0:
+				ext = b
+			f = f"out_{cx}.{ext}"
+			out_pairs.append((f"{tmpdir}/{f}", cx))
+			m[k] = f
+			cx = cx + 1
+	out_nb = cx
+	dprint(f"in_pairs={in_pairs}")
+	dprint(f"out_pairs={out_pairs}")
+	dprint(f"out_nb={out_nb}")
+	import iio
+	for i in in_pairs:
+		idx = i[0]
+		fname = i[1]
+		dprint(f"gointg to write args[{idx}] into file {fname}")
+		iio.write(fname, args[idx])
+
+	# 3. write the call script into the sanitized run environement
+	callscript = "%s/%s" % (tmpdir, CALL_SCRIPT_NAME)
+	with open(callscript, "w") as f:
+		from string import Template
+		f.write("export PATH=%s:$PATH\n" % bindir)
+		f.writelines(["%s\n" % Template(i).safe_substitute(m)
+		              for i in p['RUN']])
+
+	# 4. run the call script
+	import subprocess
+	#subprocess.call("pwd;cat %s" % callscript, shell=True, cwd=tmpdir)
+	subprocess.call(". %s" % callscript, shell=True, cwd=tmpdir)
+
+	# 5. recover the output data into out_nb ndarrays
+	outs = [] # list of output ndarrays
+	for i in out_pairs:
+		x = iio.read(i[0])
+		outs.append(x)
+
+	if len(outs) > 1:
+		return tuple(outs)
+	else:
+		return outs[0]
 
 # perform the necessary magic to define the article "x" programmatically note:
 # the corresponding idl file is parsed, but the article code is not downloaded
 # and compiled.  This happens upon the first call of the interface
 def export_article_interface(x):
+	p = ipol_parse_idl(f"{IPOL_CONFIG}/idl/{x}")
 	__import__(__name__).__dict__[x] = lambda *a, **k : run_article(x, a, k)
+	globals()[x].__doc__ = p["TITLE"]  # TODO: beautify docstring
 
 
 def main_status():
