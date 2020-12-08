@@ -1,7 +1,7 @@
 CLIPOL: a command line interface to IPOL
 
 All the implementation is contained on a single file "ipol", which is an
-executable python script.  This project has two separate goals:
+executable and importable python script.  This project has two separate goals:
 
 1) provide a command line interface to *all* ipol articles
 2) provide a unified IPOL interface for many languages (numpy, octave, lua, ...)
