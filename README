@@ -1,6 +1,6 @@
 CLIPOL: a command line interface to IPOL
 
-All the implementation is contained on a single file "clipol", which is an
+All the implementation is contained on a single file "ipol", which is an
 executable python script.  This project has two separate goals:
 
 1) provide a command line interface to *all* ipol articles
@@ -15,7 +15,7 @@ code of the article.
 The IDL files of each IPOL algorithms are stored on the directory
 "~/.config/ipol/idl/".   This can be created and filled-in manually, and the
 files can be edited by hand using a text editor.  It can also be filled-in
-automatically by running "clipol download_idls".
+automatically by running "ipol download_idls".
 
 The downloaded and compiled sources, and the binaries, of an algorithm X are
 stored on the directory "~/.cache/ipol/X" according to the following hierarchy:
@@ -31,8 +31,8 @@ algorithm is run to create the requested files.
 
 Thus, for example, if we run
 
-$ clipol ace lena.png out1.png
-$ clipol ace lena.png out2.png
+$ ipol ace lena.png out1.png
+$ ipol ace lena.png out2.png
 
 The files out1.png and out2.png will be identical (a color-corrected version of
 the lena image) but the first run will be much slower because the whole source
@@ -41,7 +41,7 @@ be very fast.  Thus, to try the ACE algorithm with several values of alpha we
 can do
 
 for i in {1..8}; do
-	clipol ace lena.png lena_ace_$i.png alpha=$i
+	ipol ace lena.png lena_ace_$i.png alpha=$i
 done
 
 
