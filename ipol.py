@@ -329,6 +329,28 @@ def main_article(argv):
 	#	fail("signatures mismatch")
 	return 0
 
+# this function calls the article "x" with the given arguments
+# it is used from the import-able python interface
+# NOTE: it could be refactored with the function "main_article" above,
+# because most of the logic is the same
+
+def run_article(x, *args):
+	args, kwargs = (args[0], args[1]) # I don't understand why this works
+	dprint(f"going to run {x}({args}, {kwargs})")
+	#n = len(args)
+	#m = len(kwargs.keys())
+	#dprint(f"n={n}")
+	#dprint(f"m={m}")
+	p = ipol_parse_idl(f"{IPOL_CONFIG}/idl/{x}")
+	return 0
+
+# perform the necessary magic to define the article "x" programmatically note:
+# the corresponding idl file is parsed, but the article code is not downloaded
+# and compiled.  This happens upon the first call of the interface
+def export_article_interface(x):
+	__import__(__name__).__dict__[x] = lambda *a, **k : run_article(x, a, k)
+
+
 def main_status():
 	config_dir = IPOL_CONFIG
 	config_idl = "%s/idl" % config_dir
@@ -345,7 +367,7 @@ def main_list():
 	idls = os.listdir(config_idl)
 	for x in idls:
 		p = ipol_parse_idl("%s/%s" % (config_idl, x))
-		dprint("\t%s\t%s" % (p['NAME'], p['LONGNAME']))
+		dprint("\t%s\t%s" % (p['NAME'], p['TITLE']))
 	return 0
 
 def main_dump(x):
@@ -435,15 +457,17 @@ def main():
 	return main_article(sys.argv[1:])
 
 # ipol.sh: the shell interface
-if __name__ == '__main__':
+if __name__ == "__main__":
 	import sys
 	sys.dont_write_bytecode = True
 	sys.exit(main())
 
 # ipol.py: the import-able interface
-
-
-
+if __name__ == "ipol":
+	dprint(f"entering importable interface")
+	available_idls = ("scb", "lsd")
+	for i in available_idls:
+		export_article_interface(i)
 
 
 
