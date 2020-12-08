@@ -9,9 +9,8 @@ BUILD cp tvl1flow $BIN
 BUILD:OpenBSD make CC="cc -std=c99" OMPFLAGS="-DDISABLE_OMP"
 BUILD:OpenBSD cp tvl1flow $BIN
 
-
-INPUT image a
-INPUT image b
-OUTPUT image out
+INPUT a image png
+INPUT b image png
+OUTPUT out image flo
 
 RUN tvl1flow $a $b $out

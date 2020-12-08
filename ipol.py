@@ -324,7 +324,7 @@ def main_article(argv):
 	dprint("args_nop = %s" % args_nop)
 	dprint("args_yes = %s" % args_yes)
 	mp = ipol_matchpars(p,args_nop,args_yes)
-	print("matched args:\n%s" % mp)
+	dprint("matched args:\n%s" % mp)
 	#if len(args_nop) == nb_in + nb_out:
 	ipol_call_matched(p, mp)
 	#else:
