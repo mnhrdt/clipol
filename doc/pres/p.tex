@@ -114,7 +114,7 @@ GTTI 9--12--2020
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
 IPOL.PY AND IPOL.SH\\
 ===================
 
@@ -133,7 +133,9 @@ For various serious reasons.
 \vfill
 \pause
 {\bf Status:}\\
-- {\color{blue}github.com/mnhrdt/clipol}\\
+%- {\color{blue}github.com/mnhrdt/clipol}\\
+%- {\color{blue}git.sr.ht/\verb+~+coco/clipol}\\
+- {\color{blue}\url{git.sr.ht/~coco/clipol}}\\
 - Works on Linux, BSDs and macOS Catalina, no Windows\\
 - Missing support for octave/torch/tensorflow\\
 - Must add ``all'' IPOL algorithms (only 10 yet)
@@ -184,7 +186,7 @@ CONCATENATION OF IPOL ALGORITHMS\\
 
 {\bf Goal:}
 Estimate the noise of an image using Ponomarenko's method, then denoise it
-using BM3D.
+using NLM.
 
 \vfill
 In Python:
@@ -192,31 +194,55 @@ In Python:
 import ipol, iio
 x = iio.read("barbara.png")
 s = ipol.ponomarenko(x)
-y = ipol.bm3d(x, s)
+y = ipol.nlm(x, s)
 iio.write("barbara_denoised.png")
 \end{minted}
 
 \vfill
 In the shell:
 \begin{minted}[frame=single]{bash}
-S=`ipol ponomarenko barbara.png`
-ipol bm3d --sigma=$S barbara.png barbara_denoised.png
+S=`ipol ponomarenko barbara.png -`
+ipol nlm sigma=$S barbara.png barbara_denoised.png
 \end{minted}
 
 \end{frame}
 
 % python help (with completion)
-\begin{frame}
+\begin{frame}[fragile]
 PYTHON HELP VIA COMPLETION\\
 ==========================
+
+Typing
+\begin{minted}[frame=single]{python}
+import ipol
+
+ipol.scb(
+\end{minted}
+inside a modern interface shows the auto-generated help message for the
+algorithm "scb":
+\begin{minted}[frame=single]{python}
+# Simplest Color Balance
+# out = scb(in, Smin=1, Smax=1, mode="rgb")
+\end{minted}
 
 \end{frame}
 
 % shell help (with completion)
-\begin{frame}
+\begin{frame}[fragile]
 SHELL HELP OPTION\\
 =================
 
+Similarly, typing
+\begin{minted}[frame=single]{shell}
+ipol scb
+\end{minted}
+on the shell gives the help for that sub-command
+\footnotesize
+\begin{minted}[frame=single]{shell}
+Simplest Color Balance
+Usage:
+        ipol scb in.png [Smin=1] [Smax=1] [mode="rgb"] out.png
+\end{minted}
 \end{frame}
 
 % frontend design criteria
@@ -269,8 +295,8 @@ NAME lsd
 TITLE Line Segment Detector
 SRC http://www.ipol.im/pub/art/2012/gjmr-lsd/lsd_1.6.zip
 
-INPUT in image:pgm
-OUTPUT out text
+INPUT in image pgm
+OUTPUT out image
 
 BUILD make
 BUILD cp lsd $BIN
@@ -290,8 +316,8 @@ NAME lsd  # global identifier
 TITLE Line Segment Detector
 SRC http://www.ipol.im/pub/art/2012/gjmr-lsd/lsd_1.6.zip
 
-INPUT image:pgm in  # the input image is converted to pgm
-OUTPUT text out
+INPUT in image pgm  # the input image is converted to pgm
+OUTPUT out image
 
 BUILD make          # shell instructions to build the program
 BUILD cp lsd $BIN   # program files are copied to $BIN
@@ -307,17 +333,58 @@ A MORE COMPLEX IDL FILE\\
 =======================
 
 \begin{minted}[frame=single,fontsize=\footnotesize]{docker}
-a
+NAME scb
+TITLE Simplest Color Balance
+AUTHORS N.Limare, J.-L.Lisani, J.-M.Morel, A.Belén Petro, C.Sbert
+SRC http://www.ipol.im/pub/art/2011/llmps-scb/simplest_color_balance.tar.gz
+
+BUILD make
+BUILD cp balance $BIN/scb
+
+INPUT in image
+INPUT Smin number 1      # percentage saturated to min
+INPUT Smax number 1      # percentage saturated to max
+INPUT mode string rgb    # rgb or irgb
+OUTPUT out image
+
+RUN scb $mode $Smin $Smax $in $out
 \end{minted}
+\color{red}{\bf Note:}
+This was written after a fast read of the code's README file
+\end{frame}
+
+\begin{frame}[fragile]
+A MORE COMPLEX IDL FILE\\
+=======================
+
+\begin{minted}[frame=single,fontsize=\footnotesize]{docker}
+NAME tvl1flow
+TITLE TVL1 Optical Flow
+SRC http://www.ipol.im/pub/art/2013/26/tvl1flow_3.tar.gz
+
+BUILD make
+BUILD cp tvl1flow $BIN
+
+BUILD:OpenBSD make CC="cc -std=c99" OMPFLAGS="-DDISABLE_OMP"
+BUILD:OpenBSD cp tvl1flow $BIN
+
+INPUT a image png
+INPUT b image png
+OUTPUT out image flo
+
+RUN tvl1flow $a $b $out
+\end{minted}
+\color{red}{\bf Note:}
+The actual file has several optional parameters
 \end{frame}
 
 
 % list of current IDL files
-\begin{frame}
-EXISTING IDL FILES\\
-==================
-
-\end{frame}
+%\begin{frame}
+%EXISTING IDL FILES\\
+%==================
+%
+%\end{frame}
 
 
 
@@ -341,6 +408,46 @@ The \bf How
 \begin{frame}
 INNER WORKINGS OF ipol.py\\
 =========================
+
+1. A single file {\color{blue}ipol.py} that you can\\
+import (from Python) or run (from the shell)
+
+2. The first call to {\color{blue}ipol.X()} downloads and compiles the source
+code into {\color{blue}\url{~/.cache/ipol/X/bin}}
+
+3. Subsequent calls reuse this pre-compiled code
+
+4. A local archive of all computed inputs/outputs is kept on
+{\color{blue}\url{~/.cache/ipol/X/archive}}
+
+5. Idl files are kept in {\color{blue}\url{~/.config/ipol/idl}}
+
+\end{frame}
+
+\begin{frame}[fragile]
+FUNNY IMPLEMENTATION DETAILS\\
+============================
+
+How to generate functions from a string:
+\begin{minted}[fontsize=\scriptsize]{python}
+def export_article_interface(x):
+        __import__("ipol").__dict__[x] = lambda *a, **k : run_article(x, a, k)
+\end{minted}
+
+\pause
+Then you can do:
+\begin{minted}[fontsize=\scriptsize]{python}
+export_article_interface("scb")    # create a global function named ipol.scb
+y = ipol.scb(x, Smin=2, Smax=2)    # call run_article("scb", x, ...)
+\end{minted}
+
+\vfill
+\pause
+And, to generate the docstrings:
+\begin{minted}[fontsize=\scriptsize]{python}
+globals()["scb"].__doc__ = ...
+\end{minted}
+
 
 \end{frame}
 
@@ -387,8 +494,17 @@ ipol code.
 % trust-based reproducibility in current ipol demos
 % goal: proof-based reproducibility
 \begin{frame}
-IPOL.PY AND IPOL.SH\\
-===================
+$\!\,$REASON NUMBER 1: {\bf\color{darkgreen}PROOF}-BASED REPRODUCTIBILITY\\
+==============================================
+
+Reproductibility offered by IPOL demos entails a certain level of
+{\color{red}trust}: you see that the authors can produce the results, but are
+they really using the published algorithm?  Are there hidden parameters inside
+{\color{red}run.sh}?
+
+\pause
+The only way to be sure is to download and
+{\bf \color{darkgreen}run the code locally}!
 
 \end{frame}
 
@@ -396,8 +512,17 @@ IPOL.PY AND IPOL.SH\\
 % in more practical terms: avoid reading the ''README'' for each new ipol code
 % we want to try.  The IDL formalizes (and thus replaces) the README file
 \begin{frame}
-IPOL.PY AND IPOL.SH\\
-===================
+$\!\,$REASON NUMBER 2: FORMALIZATION OF THE README FILE
+=================================================
+
+To use a new IPOL code, we have to read and understand the provided README
+file, which is a {\color{red}freely-formatted text},
+with {\color{red}different conventions} for each
+article.
+
+The IDL files serve as a formalization of the various READMEs.  Thus, they are
+a {\bf\color{darkgreen} formal documentation} that is useful in itself (even if
+you don't use ipol.py).
 
 \end{frame}
 
@@ -408,8 +533,24 @@ IPOL.PY AND IPOL.SH\\
 % - no global imports
 % - no bullshit like json, pandas, and the like
 \begin{frame}
-IPOL.PY AND IPOL.SH\\
-===================
+REASON NUMBER 3: PERSONAL GROWTH\\
+================================
+
+This is my "first" Python program, I had great fun learning it.
+
+\pause
+Also, I used a (non-standard) {\bf\color{darkgreen}sane
+Python coding style}:
+
+- all code in a single file\\
+- no global imports\\
+- no classes\\
+- no exceptions\\
+- no bullshit like json, pandas, and the like\\
+- all local variables are single letters\\
+- all strings are f-strings, no .format\\
+- indentation with tabs\\
+- non PEP-8 compliant\\
 
 \end{frame}
 
@@ -417,9 +558,13 @@ IPOL.PY AND IPOL.SH\\
 % build a corpus of algorithm à la megawave that are runnable and comparable
 % together.  Goal: never get to ``de-ipolisize'' a code in the future.
 \begin{frame}
-IPOL.PY AND IPOL.SH\\
-===================
+REASON NUMBER 4: STABILIZE THE CORPUS OF ALGORITHMS\\
+===================================================
 
+In the olden days we had everything on {\color{blue}Megawave}.
+Now, to use megawave codes we have to un-megawaveize them.
+
+I hope that we'll never have to un-ipolize a code!
 \end{frame}
 
 
@@ -433,8 +578,20 @@ IPOL.PY AND IPOL.SH\\
 % 7. Portability to as many systems as possible
 % 8. Efficient runtime
 \begin{frame}
-IPOL.PY AND IPOL.SH\\
-===================
+DESIGN PHILOSOPHY\\
+=================
+
+From more to less important:
+
+0. Offer proof-based reproductibility\\
+1. Super-simple shell interface\\
+2. Super-simple Python interface\\
+3. Super-simple IDL files (goal: 1 IDL file $\le$ 15min)\\
+4. Minimum number of Python dependencies\\
+5. Super-simple Python implementation\\
+6. Portability to as many IPOL algorithms as possible\\
+7. Portability to as many systems as possible\\
+8. Efficient runtime\\
 
 \end{frame}
 
@@ -443,12 +600,44 @@ IPOL.PY AND IPOL.SH\\
 STATUS AND FUTURE WORK\\
 ======================
 
+{\bf ipol.py:}\\
+A {\color{darkgreen}natural} and
+{\color{darkgreen}local} python+shell interface to IPOL
+
+{\bf Status:}\\
+{\color{darkgreen}Exists},
+{\color{red}clunky implementation},
+{\color{red}has many bugs},
+{\color{red}not~well-documented},
+{\color{red}not~feature-complete}
+
+{\bf Future work:}\\
+write lots of IDL files,
+fix bugs,\\
+improve autogenerated docstrings,\\
+adapt to trained torch/tf models
+
+{\bf Far future:}\\
+auto-generated efficient C interfaces by adding a CFFI command to the IDL files
+
+
 \end{frame}
 
 % support promise: 1 idl file = 1 pint of beer (of my choice)
 \begin{frame}
-IPOL.PY AND IPOL.SH\\
-===================
+PUBLICITY\\
+=========
+
+Do you think it can be useful for you?
+
+I promise support at the price of
+
+\color{blue}
+\fbox{
+\fbox{
+\fbox{
+\fbox{1 IDL file = 1 pint of beer (of my choice)}
+}}}
 
 \end{frame}
 
