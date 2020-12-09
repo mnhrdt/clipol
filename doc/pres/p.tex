@@ -378,6 +378,33 @@ RUN tvl1flow $a $b $out
 The actual file has several optional parameters
 \end{frame}
 
+\begin{frame}[fragile]
+IDL SPECIFICATION\\
+=================
+
+\begin{minted}[frame=single,fontsize=\footnotesize]{docker}
+An IDL file is a sequence of lines of text.
+
+Each line is of the form "COMMAND option1 option2 ...".
+
+There are 7 commands: NAME TITLE SRC INPUT OUTPUT BUILD RUN
+
+There will never be more than these commands, and
+"TITLE" may be removed in the future, or replaced by "DOC".
+You can add user-readable text by using #-comments.
+
+NAME <id>                             # how to call the algorithm
+TITLE <unquoted-string-max-68-chars>  # title of the article
+SRC <url>                             # where to get the source code
+BUILD <command-line>                  # build instructions
+INPUT <id> <type>                     # obligatory input argument
+INPUT <id> <type> <default-value>     # optional input argument
+OUTPUT <id> <type>                    # obligatory output argument
+OUTPUT <id> <type> optional           # optional output argument
+RUN <command-line>                    # run instructions
+\end{minted}
+
+\end{frame}
 
 % list of current IDL files
 %\begin{frame}
