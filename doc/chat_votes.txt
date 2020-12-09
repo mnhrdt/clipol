@@ -1,0 +1,23 @@
+13:34:42  From Adrien : docker
+13:34:45  From Lara Raad : docker
+13:34:46  From roger : docker
+13:34:49  From Roland Akiki : docker
+13:34:50  From Mariano : docker
+13:34:53  From Jérémy Anger : docker is more trending but ini looks cooler
+13:34:55  From Axel Davy : docker
+13:34:57  From rafael grompone von gioi : docker
+13:35:06  From Charles Hessel : docker
+13:35:46  From dewil : ini, of course
+13:37:13  From Quentin Bammey : ini looks slightly more clear imo
+13:50:51  From Jérémy Anger : "pip install ipol" will be awesome
+can we disable the archive? (should be off by default)
+could we automatically convert ddl files to ipol.py config files?
+13:52:47  From Quentin Bammey : can there be some exchange with the online IPOL archives?
+13:53:57  From pariasm : I'd like an ipol-demo.sh that sends the images to the server and runs the demo there and sends the output back. How many beers does this require?
+13:58:11  From Axel Davy : What happens in case of compilation error (new gcc release + program using -Wall -Werror for example) ? Is it easy for the user to workaround the error.
+14:00:57  From Axel Davy : Thank you ! Very interesting
+14:01:34  From Boris : Thank you, very fun!
+14:01:36  From Jérémy Anger : can't wait to use it, thanks!
+14:01:39  From Quentin Bammey : Very nice presentation, thank you!
+14:01:45  From Carlo de Franchis : Yes indeed, thank you very much!
+
