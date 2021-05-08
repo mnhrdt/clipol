@@ -12,7 +12,8 @@
 \usepackage{graphicx}        % to include images
 %\usepackage{animate}         % to include animated images
 %\usepackage{bbding}          % for Checkmark and XSolidBrush
-\usepackage[outputdir=PDFLATEXFILTERD]{minted}          % for code insets
+%\usepackage[outputdir=PDFLATEXFILTERD]{minted}          % for code insets
+\usepackage{minted}          % for code insets
 \usepackage{soul}            % for colored strikethrough
 
 \colorlet{darkgreen}{black!50!green}  % used for page numbers
@@ -95,6 +96,7 @@
 
 \begin{document}
 
+\addtocounter{framenumber}{-1}
 \begin{frame}[plain,fragile]
 \LARGE
 \begin{verbatim}
@@ -252,7 +254,8 @@ EXISTING ALGORITHMS\\
 
 Some IPOL algorithms have already been adapted to this system:
 {\color{blue}
-ldf, tvl1flow, phsflow, roflow, rdpoflow, ace, bm3d, sift, asift,
+lsd, tvl1flow, phsflow, roflow, rdpoflow, ace, %bm3d,
+sift, asift,
 goldstein-fattal, canny-devernay, retinex-poisson, nlm, dct-denoise
 }
 
@@ -333,21 +336,21 @@ A MORE COMPLEX IDL FILE\\
 =======================
 
 \begin{minted}[frame=single,fontsize=\footnotesize]{docker}
-NAME scb
-TITLE Simplest Color Balance
+NAME    scb
+TITLE   Simplest Color Balance
 AUTHORS N.Limare, J.-L.Lisani, J.-M.Morel, A.Belén Petro, C.Sbert
-SRC http://www.ipol.im/pub/art/2011/llmps-scb/simplest_color_balance.tar.gz
+SRC     http://www.ipol.im/pub/art/2011/llmps-scb/simplest_color_balance.tar.gz
 
-BUILD make
-BUILD cp balance $BIN/scb
+BUILD   make
+BUILD   cp balance $BIN/scb
 
-INPUT in image
-INPUT Smin number 1      # percentage saturated to min
-INPUT Smax number 1      # percentage saturated to max
-INPUT mode string rgb    # rgb or irgb
-OUTPUT out image
+INPUT   in    image
+INPUT   Smin  number 1      # percentage saturated to min
+INPUT   Smax  number 1      # percentage saturated to max
+INPUT   mode  string rgb    # rgb or irgb
+OUTPUT  out   image
 
-RUN scb $mode $Smin $Smax $in $out
+RUN     scb $mode $Smin $Smax $in $out
 \end{minted}
 \color{red}{\bf Note:}
 This was written after a fast read of the code's README file
@@ -358,29 +361,29 @@ A MORE COMPLEX IDL FILE\\
 =======================
 
 \begin{minted}[frame=single,fontsize=\footnotesize]{docker}
-NAME tvl1flow
-TITLE TVL1 Optical Flow
-SRC http://www.ipol.im/pub/art/2013/26/tvl1flow_3.tar.gz
+NAME    tvl1flow
+TITLE   TVL1 Optical Flow
+SRC     http://www.ipol.im/pub/art/2013/26/tvl1flow_3.tar.gz
 
-BUILD make
-BUILD cp tvl1flow $BIN
+BUILD   make
+BUILD   cp tvl1flow $BIN
 
-BUILD:OpenBSD make CC="cc -std=c99" OMPFLAGS="-DDISABLE_OMP"
-BUILD:OpenBSD cp tvl1flow $BIN
+INPUT   a   image png
+INPUT   b   image png
+OUTPUT  out image flo
 
-INPUT a image png
-INPUT b image png
-OUTPUT out image flo
-
-RUN tvl1flow $a $b $out
+RUN     tvl1flow $a $b $out
 \end{minted}
+%BUILD:OpenBSD make CC="cc -std=c99" OMPFLAGS="-DDISABLE_OMP"
+%BUILD:OpenBSD cp tvl1flow $BIN
+
 \color{red}{\bf Note:}
 The actual file has several optional parameters
 \end{frame}
 
 \begin{frame}[fragile]
-IDL SPECIFICATION\\
-=================
+IDL SPECIFICATION {\color{red}(for rafa)}\\
+============================
 
 \begin{minted}[frame=single,fontsize=\footnotesize]{docker}
 An IDL file is a sequence of lines of text.
@@ -414,6 +417,105 @@ RUN <command-line>                    # run instructions
 %\end{frame}
 
 
+\begin{frame}
+OPEN DESIGN PROBLEM NUMBER 1\\
+============================
+
+Single namespace or submodules?
+
+{\color{blue}$\qquad$ ipol.tvl1flow}
+
+vs.
+
+{\color{blue}$\qquad$ ipol.of.tvl1}
+
+\end{frame}
+
+\begin{frame}[fragile]\small
+OPEN DESIGN PROBLEM NUMBER 2\\
+============================
+
+What format for IDL files: "docker" vs "ini"?
+% put an .ini file here
+\vspace{-1em}
+\begin{minted}[frame=single,fontsize=\scriptsize]{bash}
+[info]
+name = ace
+longname = Automatic Color Enhancement
+authors = Pascal Getreuer
+src = http://www.ipol.im/pub/art/2012/g-ace/ace_20121029.tar.gz
+
+[input]
+in = image
+alpha = number : 5
+omega = string : 1/r
+method = string : interp5
+
+[output]
+out = image
+
+[build]
+make -f makefile.gcc
+cp ace $BIN
+
+[run]
+ace -a $alpha -w $omega -m $method $in $out
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]\small
+OPEN DESIGN PROBLEM NUMBER 2\\
+============================
+
+What format for IDL files: "docker" vs "ini"?
+% put an .ini file here
+\vspace{-1em}
+\begin{minted}[frame=single,fontsize=\scriptsize]{docker}
+NAME    ace
+TITLE   Automatic Color Enhancement
+AUTHOR  Pascal Getreuer
+SRC     http://www.ipol.im/pub/art/2012/g-ace/ace_20121029.tar.gz
+
+BUILD   make -f makefile.gcc
+BUILD   cp ace $BIN
+
+INPUT   image   in
+INPUT   number  alpha   5
+INPUT   string  omega   1/r
+INPUT   string  method  interp5
+
+OUTPUT  image   out
+
+RUN     ace -a $alpha -w $omega -m $method $in $out
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]\small
+OPEN DESIGN PROBLEM NUMBER 2\\
+============================
+
+What format for IDL files: "docker" vs "ini"?
+% put an .ini file here
+\vspace{-1em}
+\begin{minted}[frame=single,fontsize=\scriptsize]{docker}
+NAME    ace
+TITLE   Automatic Color Enhancement
+AUTHOR  Pascal Getreuer
+SRC     http://www.ipol.im/pub/art/2012/g-ace/ace_20121029.tar.gz
+
+BUILD   make -f makefile.gcc
+BUILD   cp ace $BIN
+
+INPUT   in      image
+INPUT   alpha   number  5
+INPUT   omega   string  1/r
+INPUT   method  string  interp5
+
+OUTPUT  out     image
+
+RUN     ace -a $alpha -w $omega -m $method $in $out
+\end{minted}
+\end{frame}
 
 
 % THE HOW
@@ -502,21 +604,21 @@ The \bf Why
 {Various serious reasons}
 \end{frame}
 
-\begin{frame}
-$\!\,${\bf WHY:} SUMMARY OF REASONS\\
-=======================
-
-1. Proof-based reproducibility\\
-(as opposed to trust-based for ipol demos)
-
-2. Personal usage: avoid re-reading the README file every time I want to run an
-ipol code.
-
-3. Personal challenge: write a sane Python program
-
-4. Towards a ``corpus'' of algorithms like in megawave
-
-\end{frame}
+%\begin{frame}
+%$\!\,${\bf WHY:} SUMMARY OF REASONS\\
+%=======================
+%
+%1. Proof-based reproducibility\\
+%(as opposed to trust-based for ipol demos)
+%
+%2. Personal usage: avoid re-reading the README file every time I want to run an
+%ipol code.
+%
+%3. Personal challenge: write a sane Python program
+%
+%4. Towards a ``corpus'' of algorithms like in megawave
+%
+%\end{frame}
 
 % trust-based reproducibility in current ipol demos
 % goal: proof-based reproducibility
@@ -539,7 +641,7 @@ The only way to be sure is to download and
 % in more practical terms: avoid reading the ''README'' for each new ipol code
 % we want to try.  The IDL formalizes (and thus replaces) the README file
 \begin{frame}
-$\!\,$REASON NUMBER 2: FORMALIZATION OF THE README FILE
+REASON NUMBER 2: FORMALIZATION OF THE README FILE
 =================================================
 
 To use a new IPOL code, we have to read and understand the provided README
@@ -553,6 +655,31 @@ you don't use ipol.py).
 
 \end{frame}
 
+\begin{frame}
+REASON NUMBER 3: ANSWERS A PRACTICAL NEED\\
+=========================================
+
+Charles' python bindings to IPOL algorithms, for example
+{\color{blue}\url{github.com/cmla/ponomarenko}}:
+
+{\color{red}
+- a whole git repository\\
+- seven particular files\\
+- in-place Makefile tweaks\\
+- ad-hoc pipy integration\\
+- 3 months-long development\\
+}{\bf\color{darkgreen}- fast, in-memory, zero-overhead interface}
+
+\vfill
+Similar repos:
+
+{\color{blue}\url{github.com/cmla/{ransac,plyflatten,sift,srtm4}}}:\\
+several ad-hoc python bindings to C+shell algorithms
+\end{frame}
+
+\begin{frame}
+	\includegraphics[height=\textheight]{f/shittycoco.png}
+\end{frame}
 
 % personally, a proof of sane python coding style
 % - indentation with tabs
@@ -560,7 +687,7 @@ you don't use ipol.py).
 % - no global imports
 % - no bullshit like json, pandas, and the like
 \begin{frame}
-REASON NUMBER 3: PERSONAL GROWTH\\
+REASON NUMBER 4: PERSONAL GROWTH\\
 ================================
 
 This is my "first" Python program, I had great fun learning it.
@@ -584,14 +711,30 @@ Python coding style}:
 
 % build a corpus of algorithm à la megawave that are runnable and comparable
 % together.  Goal: never get to ``de-ipolisize'' a code in the future.
-\begin{frame}
-REASON NUMBER 4: STABILIZE THE CORPUS OF ALGORITHMS\\
+\begin{frame}[fragile]
+REASON NUMBER 5: STABILIZE THE CORPUS OF ALGORITHMS\\
 ===================================================
 
 In the olden days we had everything on {\color{blue}Megawave}.
 Now, to use megawave codes we have to un-megawaveize them.
 
 I hope that we'll never have to un-ipolize a code!
+
+\vfill
+\pause
+{\bf Relistic example} from the "ace" description file:
+\begin{minted}[frame=single,fontsize=\scriptsize]{docker}
+# general build instructions
+BUILD make -f makefile.gcc
+BUILD cp ace $BIN
+
+# build instructions for systems whose "uname" matches OpenBSD
+BUILD:OpenBSD sed -i~ 85d acecli.c      # delete openmp line
+BUILD:OpenBSD sed -i~ 1317d imageio.c   # delete openmp line
+BUILD:OpenBSD gmake -f makefile.gcc OPENMP="" CFLAGS="-std=c99 -O3"
+BUILD:OpenBSD cp ace $BIN
+\end{minted}
+\vfill
 \end{frame}
 
 
@@ -640,12 +783,18 @@ A {\color{darkgreen}natural} and
 
 {\bf Future work:}\\
 write lots of IDL files,
-fix bugs,\\
+fix bugs,
+{\color{blue}pip install ipol},
+\\
 improve autogenerated docstrings,\\
 adapt to trained torch/tf models
 
 {\bf Far future:}\\
 auto-generated efficient C interfaces by adding a CFFI command to the IDL files
+
+\pause
+{\bf Trolling:}
+add {\color{blue}--serve-http} option
 
 
 \end{frame}
@@ -657,7 +806,9 @@ PUBLICITY\\
 
 Do you think it can be useful for you?
 
-I promise support at the price of
+No need to learn to write IDL files!
+
+I offer support at the price of
 
 \color{blue}
 \fbox{

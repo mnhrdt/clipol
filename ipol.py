@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
-# imports
-import os   # TODO: remove this global import
-
 # global configuration options
 DEBUG_LEVEL = 0
-IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
+IPOL_CACHE = "/tmp/cache/ipol"
+#IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
 #IPOL_CONFIG = "%s/.config/ipol" % os.path.expanduser("~")
 IPOL_CONFIG = "/home/coco/src/clipol"
+def setup_global_variables():
+	import os
+	IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
+	IPOL_CONFIG = "/home/coco/src/clipol"
+setup_global_variables()
+
 
 # arbitrary names for temporary files
 BUILD_SCRIPT_NAME = "_ipol_build_script.sh"
@@ -125,6 +129,7 @@ def ipol_parse_idl_old(f):
 
 # download, build and cache an ipol code
 def ipol_build_interface(p):
+	import os
 	import shutil
 	import subprocess
 	dprint("building interface \"%s\"" % p)
@@ -158,6 +163,7 @@ def ipol_build_interface(p):
 	subprocess.call(". %s" % buildscript, shell=True)
 
 def ipol_is_built(p):
+	import os
 	name = p['NAME']
 	mycache = "%s/%s" % (IPOL_CACHE, name)
 	if not os.path.exists(mycache):
@@ -224,6 +230,7 @@ def get_random_key():
 
 # perform the actual subprocess call to the IPOL code (pure shell)
 def ipol_call_matched(p, m):
+	import os
 
 	# 1. create a sanitized run environment
 	if not ipol_is_built(p):
@@ -340,6 +347,7 @@ def main_article(argv):
 #
 # here the (non-optional) outputs are returned as a tuple
 def run_article(x, *args):
+
 	args, kwargs = (args[0], args[1]) # I don't understand why this works
 	dprint(f"len(args)={len(args)}")
 	dprint(f"kwargs={kwargs.keys()}")
@@ -375,6 +383,7 @@ def run_article(x, *args):
 	key = get_random_key()
 	dprint("key = %s" % key)
 	tmpdir = "%s/tmp/%s" % (mycache, key)
+	import os
 	os.makedirs(tmpdir)
 
 	# 2. write the input ndarrays into the run environment
@@ -447,6 +456,7 @@ def export_article_interface(x):
 
 
 def main_status():
+	import os
 	config_dir = IPOL_CONFIG
 	config_idl = "%s/idl" % config_dir
 	idls = os.listdir(config_idl)
@@ -457,6 +467,7 @@ def main_status():
 	return 0
 
 def main_list():
+	import os
 	config_dir = IPOL_CONFIG
 	config_idl = "%s/idl" % config_dir
 	idls = os.listdir(config_idl)
