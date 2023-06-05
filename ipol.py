@@ -71,7 +71,8 @@ def ipol_parse_idl(f):
 	keyed_sections = ("INPUT", "OUTPUT")
 
 	# parse the input file into the tree "p"
-	for l in open(f"{f}.Dockerfile", "r").read().split("\n"):
+	f = f if f.endswith(".Dockerfile") else f"{f}.Dockerfile"
+	for l in open(f, "r").read().split("\n"):
 		l = l.partition("#")[0].strip()    # remove comments
 		if len(l) < 4: continue
 		k = l.partition(" ")[0]
@@ -586,8 +587,11 @@ if __name__ == "__main__":
 # ipol.py: the import-able interface
 if __name__ == "ipol":
 	dprint(f"IPOL: entering importable interface")
-	available_idls = ("scb", "lsd")  # TODO: traverse the idl folder
-	for i in available_idls:
+	#available_idls = ("scb", "lsd")  # TODO: traverse the idl folder
+	import os
+	idls = os.listdir(f"{IPOL_CONFIG}/idl")
+	idls = [ x[:-11] if x.endswith(".Dockerfile") else x for x in idls ]
+	for i in idls:
 		export_article_interface(i)
 
 
