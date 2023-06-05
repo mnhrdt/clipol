@@ -160,12 +160,14 @@ def ipol_build_interface(p):
 		fail("more than one file! %s" % l)
 	srcdir = "%s/src/%s" % (mycache, l[0])
 	bindir = "%s/bin" % mycache
+	popd = os.getcwd()
 	os.chdir(srcdir)
 	buildscript = "%s/%s" % (srcdir, BUILD_SCRIPT_NAME)
 	with open(buildscript, "w") as f:
 		f.write("export BIN=%s\n" % bindir)
 		f.writelines(["%s\n" % i  for i in p['BUILD']])
 	subprocess.call(". %s" % buildscript, shell=True)
+	os.chdir(popd)
 
 def ipol_is_built(p):
 	import os
@@ -311,6 +313,7 @@ def ipol_call_matched(p, m):
 
 
 # run an IPOL article with the provided input and parameters
+# [this function is used for the command-line shell interface]
 #
 # Note: this function is mostly parameter juggling, the actuall call is
 # deferred to the function "ipol_call_matched"
@@ -349,9 +352,9 @@ def main_article(argv):
 
 
 # this function calls the article "x" with the given arguments
-# it is used from the import-able python interface
-# NOTE: it could be refactored with the function "main_article" above,
-# because most of the logic is the same
+# [it is used from the import-able python interface]
+# NOTE: it could be refactored with the functions "main_article" and
+# "ipol_call_matched" above, because most of the logic is the same
 #
 # here the (non-optional) outputs are returned as a tuple
 def run_article(x, *args):
@@ -469,7 +472,7 @@ def main_status():
 	config_dir = IPOL_CONFIG
 	config_idl = "%s/idl" % config_dir
 	idls = os.listdir(config_idl)
-	dprint('Config dir "%s" /ontains %d programs' % (config_dir, len(idls)))
+	dprint('Config dir "%s" contains %d programs' % (config_idl, len(idls)))
 	cache_dir = IPOL_CACHE
 	cacs = os.listdir(cache_dir)
 	dprint('Cache dir "%s" contains %d programs' % (cache_dir, len(cacs)))
@@ -499,6 +502,8 @@ def main_json(x):
 	import json
 	print(json.dumps(p, indent=8))
 	return 0
+
+# TODO: add option to dump the idl into ddl (copy-pasteable into the cp)
 
 def main_gron(x):
 	config_dir = IPOL_CONFIG
@@ -581,7 +586,7 @@ if __name__ == "__main__":
 # ipol.py: the import-able interface
 if __name__ == "ipol":
 	dprint(f"IPOL: entering importable interface")
-	available_idls = ("scb", "lsd")
+	available_idls = ("scb", "lsd")  # TODO: traverse the idl folder
 	for i in available_idls:
 		export_article_interface(i)
 
