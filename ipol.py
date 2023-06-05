@@ -595,6 +595,7 @@ if __name__ == "ipol":
 		export_article_interface(i)
 
 
-
+# API
+version = 1
 
 # vim: sw=8 ts=8 sts=0 noexpandtab:
