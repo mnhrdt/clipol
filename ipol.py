@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
 # global configuration options
-DEBUG_LEVEL = 0
+DEBUG_LEVEL = 1
 IPOL_CACHE = "/tmp/cache/ipol"
 #IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
 #IPOL_CONFIG = "%s/.config/ipol" % os.path.expanduser("~")
 IPOL_CONFIG = "/home/coco/src/clipol"
 def setup_global_variables():
 	import os
+	global IPOL_CACHE
+	global IPOL_CONFIG
 	IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
 	IPOL_CONFIG = "/home/coco/src/clipol"
 setup_global_variables()
@@ -54,6 +56,8 @@ def ipol_parse_idl(f):
 	Read an IPOL interface description from file "f"
 	(newer version, with Dockerfile-like syntax)
 	"""
+
+	dprint(f"IPOL: ipol_parse_idl f={f}")
 
 	# the variable "p" is a dictionary containing the parsed IDL file
 	p = {}
@@ -132,6 +136,7 @@ def ipol_build_interface(p):
 	import os
 	import shutil
 	import subprocess
+	dprint(f"IPOL: ipol_build_interface")
 	dprint("building interface \"%s\"" % p)
 	name = p['NAME']
 	srcurl = p['SRC']
@@ -232,6 +237,8 @@ def get_random_key():
 def ipol_call_matched(p, m):
 	import os
 
+	dprint(f"IPOL: ipol_call_matched")
+
 	# 1. create a sanitized run environment
 	if not ipol_is_built(p):
 		ipol_build_interface(p)
@@ -309,6 +316,7 @@ def ipol_call_matched(p, m):
 # deferred to the function "ipol_call_matched"
 def main_article(argv):
 	x = argv[0]
+	dprint(f"IPOL: main_article")
 	dprint("Article id = %s" % x)
 	x_idl = "%s/idl/%s" % (IPOL_CONFIG, x)
 	x_cache = "%s/%s" % (IPOL_CACHE, x)
@@ -349,6 +357,7 @@ def main_article(argv):
 def run_article(x, *args):
 
 	args, kwargs = (args[0], args[1]) # I don't understand why this works
+	dprint(f"IPOL: run_article x={x}")
 	dprint(f"len(args)={len(args)}")
 	dprint(f"kwargs={kwargs.keys()}")
 	dprint(f"going to run {x}(args, {kwargs})")
@@ -419,7 +428,7 @@ def run_article(x, *args):
 	for i in in_pairs:
 		idx = i[0]
 		fname = i[1]
-		dprint(f"gointg to write args[{idx}] into file {fname}")
+		dprint(f"going to write args[{idx}] into file {fname}")
 		iio.write(fname, args[idx])
 
 	# 3. write the call script into the sanitized run environement
@@ -564,13 +573,14 @@ def main():
 
 # ipol.sh: the shell interface
 if __name__ == "__main__":
+	dprint(f"IPOL: entering shell interface")
 	import sys
 	sys.dont_write_bytecode = True
 	sys.exit(main())
 
 # ipol.py: the import-able interface
 if __name__ == "ipol":
-	dprint(f"entering importable interface")
+	dprint(f"IPOL: entering importable interface")
 	available_idls = ("scb", "lsd")
 	for i in available_idls:
 		export_article_interface(i)
