@@ -3,8 +3,10 @@ TITLE An Analysis and Implementation of the FFDNet Image Denoising Method
 AUTHORS Matias Tassano, Julie Delon, Thomas Veit
 SRC http://www.ipol.im/pub/art/2019/231/revisions/2019-07-23/ffdnet-pytorch.zip
 
+
 BUILD touch $BIN/dummy
 
+# as per https://stackoverflow.com/questions/71182396/modulenotfounderror-no-module-named-skimage-measure-simple-metrics
 BUILD sed 's/dynamic_range/data_range/' -i ffdnet-pytorch/utils.py
 BUILD sed '/measure/c\from skimage.metrics import peak_signal_noise_ratio as compare_psnr' -i ffdnet-pytorch/utils.py
 
