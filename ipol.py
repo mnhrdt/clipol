@@ -2,16 +2,39 @@
 
 # global configuration options
 DEBUG_LEVEL = 1
-IPOL_CACHE = "/tmp/cache/ipol"
+IPOL_CACHE = "/tmp/ipol/cache"
+IPOL_CONFIG = "/tmp/ipol/config"
 #IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
 #IPOL_CONFIG = "%s/.config/ipol" % os.path.expanduser("~")
-IPOL_CONFIG = "/home/coco/src/clipol"
+#IPOL_CONFIG = "/home/coco/src/clipol"
 def setup_global_variables():
-	import os
 	global IPOL_CACHE
 	global IPOL_CONFIG
+
+	# cache is easy
+	import os
 	IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
-	IPOL_CONFIG = "/home/coco/src/clipol"
+
+	# config is harder...
+	# if ~/.config/ipol/idl/lsd.Dockerfile exists, use that folder
+	# if there's an idl folder besides this ipol.py, use that
+	# otherwise, use site.USER_BASE
+
+	import site
+	IPOL_CONFIG = site.USER_BASE
+	x = os.path.dirname(os.path.realpath(__file__))
+	if os.path.exists(f"{x}/idl/lsd.Dockerfile"):
+		IPOL_CONFIG = x
+	x = "%s/.config/ipol" % os.path.expanduser("~")
+	if os.path.exists(f"{x}/idl/lsd.Dockerfile"):
+		IPOL_CONFIG = x
+
+	# hack: google colab does not respect USER_BASE and the path is fixed
+	import sys
+	if "google.colab" in sys.modules:
+		IPOL_CONFIG = "/usr/local"
+
+
 setup_global_variables()
 
 
@@ -597,6 +620,8 @@ def main():
 # ipol.sh: the shell interface
 if __name__ == "__main__":
 	dprint(f"IPOL: entering shell interface")
+	dprint(f"IPOL_CONFIG = {IPOL_CONFIG}")
+	dprint(f"IPOL_CACHE = {IPOL_CACHE}")
 	import sys
 	sys.dont_write_bytecode = True
 	sys.exit(main())
@@ -604,6 +629,8 @@ if __name__ == "__main__":
 # ipol.py: the import-able interface
 if __name__ == "ipol":
 	dprint(f"IPOL: entering importable interface")
+	dprint(f"IPOL_CONFIG = {IPOL_CONFIG}")
+	dprint(f"IPOL_CACHE = {IPOL_CACHE}")
 	#available_idls = ("scb", "lsd")  # TODO: traverse the idl folder
 	import os
 	idls = os.listdir(f"{IPOL_CONFIG}/idl")
@@ -613,6 +640,6 @@ if __name__ == "ipol":
 
 
 # API
-version = 1
+version = 5
 
 # vim: sw=8 ts=8 sts=0 noexpandtab:
