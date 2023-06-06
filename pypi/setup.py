@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-	name = "ipol",
+	name = "clipol",
 	version = "1",
 	author = "Enric Meinhardt-Llopis",
 	author_email = "enric.meinhardt@ens-paris-saclay.fr",
