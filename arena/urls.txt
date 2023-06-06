@@ -1,0 +1,8 @@
+http://www.ipol.im/pub/art/2011/bcm_nlm/./revisions/2021-08-22/nlmeansC.tar.gz
+http://www.ipol.im/pub/art/2011/ys-dct/./revisions/2021-02-20/src_demoDCTdenoising.tar.gz
+http://www.ipol.im/pub/art/2012/g-tvd/./revisions/2012-05-19/tvdenoise_20120516.tar.gz
+http://www.ipol.im/pub/art/2013/16/./revisions/2021-02-20/nl-bayes_20130617.tar.gz
+http://www.ipol.im/pub/art/2012/l-bm3d/./revisions/2021-02-20/bm3d_src.tar.gz
+http://www.ipol.im/pub/art/2017/203/./da3d.v3.tgz
+http://www.ipol.im/pub/art/2017/201/./DCTdenoising-master.zip
+http://www.ipol.im/pub/art/2019/231/./revisions/2019-07-23/ffdnet-pytorch.zip
