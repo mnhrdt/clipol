@@ -132,6 +132,34 @@ def ipol_parse_idl_old(f):
 				p[c][key] = val
 	return p
 
+
+# check whether an article is already unzipped and built
+def ipol_is_built(p):
+	import os
+	name = p['NAME']
+	mycache = "%s/%s" % (IPOL_CACHE, name)
+	if not os.path.exists(mycache):
+		return False
+	bindir = "%s/bin" % mycache
+	if not os.path.exists(bindir):
+		return False
+	if len(os.listdir(bindir)) < 1:
+		return False
+	return True
+
+
+# auxiliary function to get the SRCDIR of an article (with some heuristics)
+def get_srcdir(p):
+	import os
+	name = p['NAME']
+	mysrc = "%s/%s/src" % (IPOL_CACHE, name)
+	l = os.listdir(mysrc)
+	if len(l) == 1:
+		return f"{mysrc}/{l[0]}"
+	else:
+		return mysrc
+
+
 # download, build and cache an ipol code
 def ipol_build_interface(p):
 	import os
@@ -156,11 +184,11 @@ def ipol_build_interface(p):
 	mysrc = os.listdir("%s/dl" % mycache)[0]
 	shutil.unpack_archive("%s/dl/%s" % (mycache,mysrc), "%s/src" % mycache)
 
-	l = os.listdir("%s/src" % mycache)
-	if len(l) != 1:
-		fail("more than one file! %s" % l)
-	srcdir = "%s/src/%s" % (mycache, l[0])
+	srcdir = get_srcdir(p)
 	bindir = "%s/bin" % mycache
+	dprint(f"srcdir = {srcdir}")
+	dprint(f"bindir = {bindir}")
+
 	popd = os.getcwd()
 	os.chdir(srcdir)
 	buildscript = "%s/%s" % (srcdir, BUILD_SCRIPT_NAME)
@@ -169,19 +197,6 @@ def ipol_build_interface(p):
 		f.writelines(["%s\n" % i  for i in p['BUILD']])
 	subprocess.call(". %s" % buildscript, shell=True)
 	os.chdir(popd)
-
-def ipol_is_built(p):
-	import os
-	name = p['NAME']
-	mycache = "%s/%s" % (IPOL_CACHE, name)
-	if not os.path.exists(mycache):
-		return False
-	bindir = "%s/bin" % mycache
-	if not os.path.exists(bindir):
-		return False
-	if len(os.listdir(bindir)) < 1:
-		return False
-	return True
 
 def ipol_signature(p):
 	nb_in = 0
@@ -298,6 +313,7 @@ def ipol_call_matched(p, m):
 	with open(callscript, "w") as f:
 		from string import Template
 		f.write("export PATH=%s:$PATH\n" % bindir)
+		f.write("export SRCDIR=%s\n" % get_srcdir(p))
 		f.writelines(["%s\n" % Template(i).safe_substitute(m)
 		              for i in p['RUN']])
 
@@ -440,6 +456,7 @@ def run_article(x, *args):
 	with open(callscript, "w") as f:
 		from string import Template
 		f.write("export PATH=%s:$PATH\n" % bindir)
+		f.write("export SRCDIR=%s\n" % get_srcdir(p))
 		f.writelines(["%s\n" % Template(i).safe_substitute(m)
 		              for i in p['RUN']])
 
