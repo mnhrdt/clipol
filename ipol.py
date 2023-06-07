@@ -98,6 +98,7 @@ def ipol_parse_idl(f):
 	for l in open(f, "r").read().split("\n"):
 		l = l.partition(" #")[0].strip()    # remove comments
 		if len(l) < 4: continue
+		if l[0] == "#": continue
 		k = l.partition(" ")[0]
 		v = l.partition(" ")[2].lstrip(" ")
 		if k in singular_entries:
