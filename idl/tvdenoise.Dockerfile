@@ -5,7 +5,7 @@ SRC http://www.ipol.im/pub/art/2012/g-tvd/revisions/2012-05-19/tvdenoise_2012051
 
 BUILD   sed 's/uint32 /uint32_t /g' -i imageio.c  # fix warning in tiff reader
 BUILD   sed 's/uint16 /uint16_t /g' -i imageio.c  # fix warning in tiff reader
-BUILD make -f makefile.gcc CFLAGS='-O3 -march=native'
+BUILD make -f makefile.gcc
 BUILD cp tvdenoise $BIN/tvdenoise
 
 INPUT in image

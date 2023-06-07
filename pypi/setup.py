@@ -6,7 +6,7 @@ def data_files():
 
 setuptools.setup(
 	name = "clipol",
-	version = "6",
+	version = "7",
 	author = "Enric Meinhardt-Llopis",
 	author_email = "enric.meinhardt@ens-paris-saclay.fr",
 	description = "python interface to some IPOL journal algorithms",

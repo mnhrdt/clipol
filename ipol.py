@@ -183,6 +183,20 @@ def get_srcdir(p):
 	else:
 		return mysrc
 
+def print_stderr_and_stdout_in_cwd(s, d):
+	import pathlib
+	p = pathlib.Path(f"{d}/stderr.txt")
+	if p.exists() and p.stat().st_size > 0:
+		dprint(f"{s} stderr:")
+		for l in open(f"{d}/stderr.txt", "r").read().split("\n"):
+			dprint(f"{l}")
+	p = pathlib.Path(f"{d}/stdout.txt")
+	if p.exists() and p.stat().st_size > 0:
+		dprint(f"{s} stdout:")
+		for l in open(f"{d}/stdout.txt", "r").read().split("\n"):
+			dprint(f"{l}")
+
+
 
 # download, build and cache an ipol code
 def ipol_build_interface(p):
@@ -215,11 +229,12 @@ def ipol_build_interface(p):
 
 	popd = os.getcwd()
 	os.chdir(srcdir)
-	buildscript = "%s/%s" % (srcdir, BUILD_SCRIPT_NAME)
-	with open(buildscript, "w") as f:
+	script = "%s/%s" % (srcdir, BUILD_SCRIPT_NAME)
+	with open(script, "w") as f:
 		f.write("export BIN=%s\n" % bindir)
 		f.writelines(["%s\n" % i  for i in p['BUILD']])
-	subprocess.call(". %s" % buildscript, shell=True)
+	subprocess.call(f". {script} >stdout.txt 2>stderr.txt", shell=True)
+	print_stderr_and_stdout_in_cwd(f"{script}", srcdir)
 	os.chdir(popd)
 
 def ipol_signature(p):
@@ -342,9 +357,9 @@ def ipol_call_matched(p, m):
 		              for i in p['RUN']])
 
 	# 4. run the call script
-	import subprocess
-	#subprocess.call("pwd;cat %s" % callscript, shell=True, cwd=tmpdir)
-	subprocess.call(". %s" % callscript, shell=True, cwd=tmpdir)
+	from subprocess import call
+	call(f". {callscript} >stdout.txt 2>stderr.txt", shell=True, cwd=tmpdir)
+	print_stderr_and_stdout_in_cwd(f"{callscript}", tmpdir)
 
 	# 5. recover the output data
 	for i in out_pairs:
@@ -485,9 +500,9 @@ def run_article(x, *args):
 		              for i in p['RUN']])
 
 	# 4. run the call script
-	import subprocess
-	#subprocess.call("pwd;cat %s" % callscript, shell=True, cwd=tmpdir)
-	subprocess.call(". %s" % callscript, shell=True, cwd=tmpdir)
+	from subprocess import call
+	call(f". {callscript} >stdout.txt 2>stderr.txt", shell=True, cwd=tmpdir)
+	print_stderr_and_stdout_in_cwd(f"{callscript}", tmpdir)
 
 	# 5. recover the output data into out_nb ndarrays
 	outs = [] # list of output ndarrays
@@ -641,6 +656,6 @@ if __name__ == "ipol":
 
 
 # API
-version = 6
+version = 7
 
 # vim: sw=8 ts=8 sts=0 noexpandtab:
