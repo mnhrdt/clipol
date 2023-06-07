@@ -1,0 +1,63 @@
+TODO
+====
+
+
+GENERAL
+
+- Write many idl files and see what new problems occur
+
+
+DOCUMENTATION
+
+- Document idl formally, towards a fixed and perennial version
+- Document the expected system dependencies to run all algorithms
+
+
+
+PYTHON INTERFACE
+
+- do something reasonable with build/run outputs.  Right now they are
+invisible from within a notebook, which is very confusing when something fails.
+At the very least they should be passed verbatim to the print function.
+Maybe according to user-setable options.  Maybe depending on error status.
+
+- 
+
+
+SHELL INTERFACE
+
+- fix filename usage: right now the shell interface fails not work if the
+  output filename is in a relative folder.
+
+- be completely orthogonal with input/internal/output image formats (hard!)
+
+- avoid unnecessary call to iion if input and output is the same
+
+- improve multibox tooling (call build, tests, clean cache, etc)
+
+
+LANGUAGE IDL
+
+- clarify how to specify number of color channels, what to do with them
+- clarify sub-language for specifying intermediary file formats
+- maybe add a "TEST" field to describe associated unit tests
+- maybe add a "DOC" field to help built better docstrings (no!)
+
+
+INTERNAL IMPLEMENTATION
+
+- refactor shell and python logic into the same function, to be called from both
+- robustify error messages, error conditions
+- fix IPOL_CONFIG mess
+- allow to rebuild without need for re-downloading
+- implement downloadall to retrieve idls (maybe not, if we rely on pip)
+- add "http_serve" option to expose a web browser interface
+
+
+PACKAGING
+
+- Write a test suite to compile and run all algorithms (maybe from TEST fields
+  in the idls?)
+
+- add python requirements so that everything, or at least some particular
+  articles, work out of the box?  setup optional requirements?

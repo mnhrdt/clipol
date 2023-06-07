@@ -3,7 +3,8 @@ TITLE An Analysis and Implementation of the BM3D Image Denoising Method
 AUTHORS Marc Lebrun
 SRC http://www.ipol.im/pub/art/2012/l-bm3d/revisions/2021-02-20/bm3d_src.tar.gz
 
-BUILD make
+BUILD sed '/stdio/a#include <string.h>' -i io_png.c  # add missing header
+BUILD make CXXFLAGS='-O3 -march=native -Wno-narrowing -Wno-misleading-indentation'
 BUILD cp BM3Ddenoising $BIN/bm3d
 
 INPUT in image

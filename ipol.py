@@ -96,10 +96,10 @@ def ipol_parse_idl(f):
 	# parse the input file into the tree "p"
 	f = f if f.endswith(".Dockerfile") else f"{f}.Dockerfile"
 	for l in open(f, "r").read().split("\n"):
-		l = l.partition("#")[0].strip()    # remove comments
+		l = l.partition(" #")[0].strip()    # remove comments
 		if len(l) < 4: continue
 		k = l.partition(" ")[0]
-		v = l.partition(" ")[2]
+		v = l.partition(" ")[2].lstrip(" ")
 		if k in singular_entries:
 			p[k] = v
 		else:
@@ -640,6 +640,6 @@ if __name__ == "ipol":
 
 
 # API
-version = 5
+version = 6
 
 # vim: sw=8 ts=8 sts=0 noexpandtab:

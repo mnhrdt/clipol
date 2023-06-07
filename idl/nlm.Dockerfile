@@ -3,7 +3,8 @@ TITLE Non-Local Means Denoising
 AUTHORS Antoni Buades, Bartomeu Coll, Jean-Michel Morel
 SRC http://www.ipol.im/pub/art/2011/bcm_nlm/revisions/2021-08-22/nlmeansC.tar.gz
 
-BUILD make clean  # remove old binaries in the zip
+BUILD sed '/stdio/a#include <string.h>' -i io_png.c  # add missing header
+BUILD make clean                                     # del binaries in the zip
 BUILD make
 BUILD cp nlmeans_ipol $BIN/nlm
 
