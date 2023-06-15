@@ -4,5 +4,5 @@ commands:
         # update version number on file setup.py
         # update version number on file ipol.py
 	python setup.py sdist bdist_wheel
-	python -m twine upload dist/clipol-X.tar.gz
-	rm -rf build dist clipol.egg-info
+	python -m twine upload dist/lipol-X.tar.gz
+	rm -rf build dist lipol.egg-info

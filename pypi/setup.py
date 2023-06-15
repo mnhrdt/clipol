@@ -5,8 +5,8 @@ def data_files():
 	return glob.glob("idl/*.Dockerfile")
 
 setuptools.setup(
-	name = "clipol",
-	version = "7",
+	name = "ipol",
+	version = "8",
 	author = "Enric Meinhardt-Llopis",
 	author_email = "enric.meinhardt@ens-paris-saclay.fr",
 	description = "python interface to some IPOL journal algorithms",

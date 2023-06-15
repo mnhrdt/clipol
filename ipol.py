@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # global configuration options
-DEBUG_LEVEL = 1
+DEBUG_LEVEL = 0
 IPOL_CACHE = "/tmp/ipol/cache"
 IPOL_CONFIG = "/tmp/ipol/config"
 #IPOL_CACHE = "%s/.cache/ipol" % os.path.expanduser("~")
@@ -529,10 +529,10 @@ def main_status():
 	config_dir = IPOL_CONFIG
 	config_idl = "%s/idl" % config_dir
 	idls = os.listdir(config_idl)
-	dprint('Config dir "%s" contains %d programs' % (config_idl, len(idls)))
+	print('Config dir "%s" contains %d programs' % (config_idl, len(idls)))
 	cache_dir = IPOL_CACHE
 	cacs = os.listdir(cache_dir)
-	dprint('Cache dir "%s" contains %d programs' % (cache_dir, len(cacs)))
+	print('Cache dir "%s" contains %d programs' % (cache_dir, len(cacs)))
 	return 0
 
 def main_list():
@@ -542,7 +542,7 @@ def main_list():
 	idls = os.listdir(config_idl)
 	for x in idls:
 		p = ipol_parse_idl("%s/%s" % (config_idl, x))
-		dprint("\t%s\t%s" % (p['NAME'], p['TITLE']))
+		print("\t%s\t%s" % (p['NAME'], p['TITLE']))
 	return 0
 
 def main_dump(x):
@@ -606,6 +606,16 @@ def main_build(x):
 		ipol_build_interface(p)
 	return 0
 
+def main_buildall():
+	import os
+	idls = os.listdir(f"{IPOL_CONFIG}/idl")
+	DEBUG_LEVEL = 1
+	for x in idls:
+		p = ipol_parse_idl(f"{IPOL_CONFIG}/idl/{x}")
+		if not ipol_is_built(p):
+			ipol_build_interface(p)
+	return 0
+
 # sub-commands:
 #	list       list all the sub-commands available (default action)
 #	status     print various global status statistics
@@ -617,6 +627,8 @@ def main():
 	import sys
 	if len(sys.argv) < 2 or sys.argv[1] == "list":
 		return main_list()
+	if sys.argv[1] == "buildall":
+		return main_buildall() if len(sys.argv) == 2 else 1
 	if sys.argv[1] == "status":
 		return main_status()
 	if sys.argv[1] == "dump":
@@ -656,6 +668,6 @@ if __name__ == "ipol":
 
 
 # API
-version = 7
+version = 8
 
 # vim: sw=8 ts=8 sts=0 noexpandtab:

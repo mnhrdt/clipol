@@ -21,7 +21,10 @@ invisible from within a notebook, which is very confusing when something fails.
 At the very least they should be passed verbatim to the print function.
 Maybe according to user-setable options.  Maybe depending on error status.
 
-- 
+- clarify whether to conserve types/shapes through calls to ipol.  For example,
+  right now calling ipol.nlm(x) when x is of shape (h,w) will produce an array
+  of shape (h,w,1).  Do we need to squeeze this array before output?  (this is
+  mostly a python problem, but not only)
 
 
 SHELL INTERFACE
@@ -42,6 +45,7 @@ LANGUAGE IDL
 - clarify sub-language for specifying intermediary file formats
 - maybe add a "TEST" field to describe associated unit tests
 - maybe add a "DOC" field to help built better docstrings (no!)
+- allow to download source from a git commit
 
 
 INTERNAL IMPLEMENTATION
