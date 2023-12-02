@@ -233,7 +233,7 @@ def ipol_build_interface(p):
 	with open(script, "w") as f:
 		f.write("export BIN=%s\n" % bindir)
 		f.writelines(["%s\n" % i  for i in p['BUILD']])
-	subprocess.call(f". {script} >stdout.txt 2>stderr.txt", shell=True)
+	subprocess.call(f". {script} >_build_stdout.txt 2>_build_stderr.txt", shell=True)
 	print_stderr_and_stdout_in_cwd(f"{script}", srcdir)
 	os.chdir(popd)
 
