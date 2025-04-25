@@ -6,14 +6,14 @@ def data_files():
 
 setuptools.setup(
 	name = "ipol",
-	version = "8",
+	version = "9",
 	author = "Enric Meinhardt-Llopis",
 	author_email = "enric.meinhardt@ens-paris-saclay.fr",
 	description = "python interface to some IPOL journal algorithms",
 	url = "https://git.sr.ht/~coco/clipol",
+	license = "AGPL-3.0",
 	classifiers = [
 		"Operating System :: OS Independent",
-		"License :: OSI Approved :: GNU Affero General Public License v3",
 		"Topic :: Scientific/Engineering :: Image Processing",
 		"Topic :: Scientific/Engineering :: Mathematics"
 		],

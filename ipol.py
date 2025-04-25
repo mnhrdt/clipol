@@ -668,6 +668,6 @@ if __name__ == "ipol":
 
 
 # API
-version = 8
+version = 9
 
 # vim: sw=8 ts=8 sts=0 noexpandtab:
